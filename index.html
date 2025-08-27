@@ -95,10 +95,13 @@
                 <aside class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
                     <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-3 border-b pb-2 gap-2">
                         <h2 class="text-lg font-bold text-slate-800">匯總報告</h2>
-                        <div id="report-filter" class="flex items-center gap-2">
-                            <button class="filter-btn active text-sm px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200" data-filter="all">全部</button>
-                            <button class="filter-btn text-sm px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200" data-filter="陽性">陽性</button>
-                            <button class="filter-btn text-sm px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200" data-filter="陰性">陰性</button>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <div id="report-filter" class="flex items-center gap-2">
+                                <button class="filter-btn active text-sm px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200" data-filter="all">全部</button>
+                                <button class="filter-btn text-sm px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200" data-filter="陽性">陽性</button>
+                                <button class="filter-btn text-sm px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200" data-filter="陰性">陰性</button>
+                            </div>
+                            <button id="export-report-btn" class="text-sm px-3 py-1 rounded-full bg-cyan-600 text-white hover:bg-cyan-700 transition-colors">匯出報告</button>
                         </div>
                     </div>
                     <div id="report-container" class="max-h-[40vh] overflow-y-auto text-sm">
@@ -122,6 +125,7 @@
             const reportContainer = document.getElementById('report-container');
             const reportFilter = document.getElementById('report-filter');
             const reportSummary = document.getElementById('report-summary');
+            const exportBtn = document.getElementById('export-report-btn');
             let activeElement = null;
             const testResults = {};
             let currentFilter = 'all'; // 'all', '陽性', '陰性'
@@ -312,6 +316,26 @@
                     e.target.classList.add('active');
                     updateReport();
                 }
+            });
+
+            // 匯出報告事件
+            exportBtn.addEventListener('click', function() {
+                let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // \uFEFF for BOM
+                csvContent += "Unit,Sequence,項目,結果\r\n";
+
+                for (const itemName in testResults) {
+                    const data = testResults[itemName];
+                    const row = `"${data.unit}","${data.sequence}","${itemName}","${data.result}"`;
+                    csvContent += row + "\r\n";
+                }
+
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "LMO_Report.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
             });
 
             // 主選單點擊事件
